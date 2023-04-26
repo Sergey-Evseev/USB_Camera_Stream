@@ -109,13 +109,15 @@ namespace USB_Camera_Stream
 
             // Get the selected resolution
             var device = new VideoCaptureDevice(videoDevices[deviceIndex].MonikerString);
-            var resolutionString = resolutionDropdown.SelectedItem as string;
             var resolution = device.VideoCapabilities
-                .FirstOrDefault(c => $"{c.FrameSize.Width}x{c.FrameSize.Height}" == resolutionString);
+                .ElementAtOrDefault(resolutionIndex);  
 
-            device.VideoResolution = resolution;                
-            videoSource.Start(); 
-            
+            if (resolution != null)
+            {
+                device.VideoResolution = resolution;
+                videoSource.Start();
+            }
+
         }
 
         private void resolutionDropdown_SelectedIndexChanged(object sender, EventArgs e)

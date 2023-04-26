@@ -82,6 +82,47 @@ namespace USB_Camera_Stream
                                                  (ClientSize.Height - pictureBox1.Height) / 2);
             }
         }
+        private void PopulateResolutionList(int deviceIndex)
+        {
+            //Get the available resolutions of the selected device
+            VideoCaptureDevice device = new VideoCaptureDevice(videoDevices[deviceIndex].MonikerString);
+            List<string> resolutions = new List<string>();
+            foreach (var capability in device.VideoCapabilities)
+            {
+                string resolution = string.Format("{0}x{1}", capability.FrameSize.Width, capability.FrameSize.Height);
+                if (!resolutions.Contains(resolution))
+                {
+                    resolutions.Add(resolution);
+                }
+            }
+
+            //Populate the resolution dropdown list with the available resolutions
+            resolutionDropdown.DataSource = resolutions;
+        }
+        private void SetResolution(int deviceIndex, int resolutionIndex)
+        {
+            // Set the resolution of the selected device
+            if (videoSource != null && videoSource.IsRunning)
+            {
+                videoSource.SignalToStop();
+            }
+
+            // Get the selected resolution
+            var device = new VideoCaptureDevice(videoDevices[deviceIndex].MonikerString);
+            var resolutionString = resolutionDropdown.SelectedItem as string;
+            var resolution = device.VideoCapabilities
+                .FirstOrDefault(c => $"{c.FrameSize.Width}x{c.FrameSize.Height}" == resolutionString);
+
+            device.VideoResolution = resolution;                
+            videoSource.Start(); 
+            
+        }
+
+        private void resolutionDropdown_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Set the resolution of the selected device
+            SetResolution(0, resolutionDropdown.SelectedIndex);
+        }
     }//end of public partial class Form1  
 
 } //end of namespace USB_Camera_Stream

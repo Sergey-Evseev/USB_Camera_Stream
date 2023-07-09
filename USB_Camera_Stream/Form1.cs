@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,6 +20,8 @@ namespace USB_Camera_Stream
     {
         private FilterInfoCollection videoDevices;
         private VideoCaptureDevice videoSource;
+        private Bitmap currentFrame; // Store the current frame in a separate variable
+        private bool isProcessingFrame; // Track if a frame is currently being processed
 
         public Form1()
         {
@@ -59,16 +63,38 @@ namespace USB_Camera_Stream
         // and display them in the PictureBox control.
         private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
-            Bitmap frame = (Bitmap)eventArgs.Frame.Clone();
+            if (!isProcessingFrame)
+            {
+                isProcessingFrame = true;
 
-            // Apply manual low light adjustment to the frame
-            int brightnessValue = brightnessSlider.Value; // Get the brightness value from a slider control
-            int contrastValue = contrastSlider.Value; // Get the contrast value from a slider control
+                // Create a new Bitmap instance to hold the captured frame
+                Bitmap frame = (Bitmap)eventArgs.Frame.Clone();
 
-            AdjustBrightness(frame, brightnessValue);
-            AdjustContrast(frame, contrastValue);
+                // Perform image processing tasks in a separate thread using Task.Run
+                Task.Run(() =>
+                {
+                    // Apply manual low light adjustment to the frame
+                    int brightnessValue = brightnessSlider.Value; // Get the brightness value from a slider control
+                    int contrastValue = contrastSlider.Value; // Get the contrast value from a slider control
 
-            pictureBox1.Image = frame;
+                    AdjustBrightness(frame, brightnessValue);
+                    AdjustContrast(frame, contrastValue);
+
+                    // Store the processed frame in the currentFrame variable
+                    currentFrame = frame;
+
+                    // Invoke the display method on the UI thread to update the PictureBox
+                    Invoke((MethodInvoker)DisplayCurrentFrame);
+
+                    isProcessingFrame = false;
+                });
+            }
+        }
+
+        private void DisplayCurrentFrame()
+        {
+            // Display the current frame in the PictureBox
+            pictureBox1.Image = currentFrame;
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -153,17 +179,45 @@ namespace USB_Camera_Stream
             else if (brightnessFactor > 2)
                 brightnessFactor = 2;
 
-            for (int i = 0; i < image.Width; i++)
+            // Lock the bitmap bits for faster pixel manipulation
+            Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
+            BitmapData bitmapData = image.LockBits(rect, ImageLockMode.ReadWrite, image.PixelFormat);
+            IntPtr ptr = bitmapData.Scan0;
+
+            // Calculate the stride (number of bytes per scanline) of the bitmap
+            int stride = bitmapData.Stride;
+
+            // Calculate the total number of bytes in the bitmap
+            int bytes = Math.Abs(stride) * image.Height;
+
+            // Create a byte array to copy the bitmap data
+            byte[] rgbValues = new byte[bytes];
+
+            // Copy the bitmap data to the byte array
+            Marshal.Copy(ptr, rgbValues, 0, bytes);
+
+            // Apply brightness adjustment to each pixel in the byte array
+            for (int i = 0; i < rgbValues.Length; i += 3)
             {
-                for (int j = 0; j < image.Height; j++)
-                {
-                    Color pixelColor = image.GetPixel(i, j);
-                    int red = (int)(pixelColor.R * brightnessFactor);
-                    int green = (int)(pixelColor.G * brightnessFactor);
-                    int blue = (int)(pixelColor.B * brightnessFactor);
-                    image.SetPixel(i, j, Color.FromArgb(pixelColor.A, red, green, blue));
-                }
+                int red = (int)(rgbValues[i] * brightnessFactor);
+                int green = (int)(rgbValues[i + 1] * brightnessFactor);
+                int blue = (int)(rgbValues[i + 2] * brightnessFactor);
+
+                // Clamp the values to the valid range (0-255)
+                red = Math.Max(0, Math.Min(red, 255));
+                green = Math.Max(0, Math.Min(green, 255));
+                blue = Math.Max(0, Math.Min(blue, 255));
+
+                rgbValues[i] = (byte)red;
+                rgbValues[i + 1] = (byte)green;
+                rgbValues[i + 2] = (byte)blue;
             }
+
+            // Copy the modified byte array back to the bitmap data
+            Marshal.Copy(rgbValues, 0, ptr, bytes);
+
+            // Unlock the bitmap bits
+            image.UnlockBits(bitmapData);
         }
 
         private void AdjustContrast(Bitmap image, int contrastValue)
@@ -175,18 +229,47 @@ namespace USB_Camera_Stream
             else if (contrastFactor > 2)
                 contrastFactor = 2;
 
-            for (int i = 0; i < image.Width; i++)
+            // Lock the bitmap bits for faster pixel manipulation
+            Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
+            BitmapData bitmapData = image.LockBits(rect, ImageLockMode.ReadWrite, image.PixelFormat);
+            IntPtr ptr = bitmapData.Scan0;
+
+            // Calculate the stride (number of bytes per scanline) of the bitmap
+            int stride = bitmapData.Stride;
+
+            // Calculate the total number of bytes in the bitmap
+            int bytes = Math.Abs(stride) * image.Height;
+
+            // Create a byte array to copy the bitmap data
+            byte[] rgbValues = new byte[bytes];
+
+            // Copy the bitmap data to the byte array
+            Marshal.Copy(ptr, rgbValues, 0, bytes);
+
+            // Apply contrast adjustment to each pixel in the byte array
+            for (int i = 0; i < rgbValues.Length; i += 3)
             {
-                for (int j = 0; j < image.Height; j++)
-                {
-                    Color pixelColor = image.GetPixel(i, j);
-                    int red = (int)(((pixelColor.R / 255f - 0.5f) * contrastFactor + 0.5f) * 255f);
-                    int green = (int)(((pixelColor.G / 255f - 0.5f) * contrastFactor + 0.5f) * 255f);
-                    int blue = (int)(((pixelColor.B / 255f - 0.5f) * contrastFactor + 0.5f) * 255f);
-                    image.SetPixel(i, j, Color.FromArgb(pixelColor.A, Clamp(red, 0, 255), Clamp(green, 0, 255), Clamp(blue, 0, 255)));
-                }
+                float red = (rgbValues[i] / 255f - 0.5f) * contrastFactor + 0.5f;
+                float green = (rgbValues[i + 1] / 255f - 0.5f) * contrastFactor + 0.5f;
+                float blue = (rgbValues[i + 2] / 255f - 0.5f) * contrastFactor + 0.5f;
+
+                // Clamp the values to the valid range (0-255)
+                red = Math.Max(0, Math.Min(red, 1));
+                green = Math.Max(0, Math.Min(green, 1));
+                blue = Math.Max(0, Math.Min(blue, 1));
+
+                rgbValues[i] = (byte)(red * 255);
+                rgbValues[i + 1] = (byte)(green * 255);
+                rgbValues[i + 2] = (byte)(blue * 255);
             }
+
+            // Copy the modified byte array back to the bitmap data
+            Marshal.Copy(rgbValues, 0, ptr, bytes);
+
+            // Unlock the bitmap bits
+            image.UnlockBits(bitmapData);
         }
+
 
         private int Clamp(int value, int min, int max)
         {

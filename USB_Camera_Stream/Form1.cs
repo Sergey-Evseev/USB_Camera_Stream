@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using AForge.Video;
 using AForge.Video.DirectShow;
-using AForge.Imaging.Filters;
 using MetroFramework;
 using MetroFramework.Forms;
 
@@ -19,7 +18,6 @@ namespace USB_Camera_Stream
     {
         private FilterInfoCollection videoDevices;
         private VideoCaptureDevice videoSource;
-        private LevelsLinear lowLightFilter = new LevelsLinear();
 
         public Form1()
         {
@@ -67,9 +65,8 @@ namespace USB_Camera_Stream
             int brightnessValue = brightnessSlider.Value; // Get the brightness value from a slider control
             int contrastValue = contrastSlider.Value; // Get the contrast value from a slider control
 
-            lowLightFilter.ApplyInPlace(frame);
-            lowLightFilter.AdjustBrightness(brightnessValue);
-            lowLightFilter.AdjustContrast(contrastValue);
+            AdjustBrightness(frame, brightnessValue);
+            AdjustContrast(frame, contrastValue);
 
             pictureBox1.Image = frame;
         }
@@ -145,6 +142,55 @@ namespace USB_Camera_Stream
         {
             // Update the contrast value
             contrastLabel.Text = $"Contrast: {contrastSlider.Value}";
+        }
+
+        private void AdjustBrightness(Bitmap image, int brightnessValue)
+        {
+            float brightnessFactor = brightnessValue / 100f;
+
+            if (brightnessFactor < 0)
+                brightnessFactor = 0;
+            else if (brightnessFactor > 2)
+                brightnessFactor = 2;
+
+            for (int i = 0; i < image.Width; i++)
+            {
+                for (int j = 0; j < image.Height; j++)
+                {
+                    Color pixelColor = image.GetPixel(i, j);
+                    int red = (int)(pixelColor.R * brightnessFactor);
+                    int green = (int)(pixelColor.G * brightnessFactor);
+                    int blue = (int)(pixelColor.B * brightnessFactor);
+                    image.SetPixel(i, j, Color.FromArgb(pixelColor.A, red, green, blue));
+                }
+            }
+        }
+
+        private void AdjustContrast(Bitmap image, int contrastValue)
+        {
+            float contrastFactor = (contrastValue + 100) / 100f;
+
+            if (contrastFactor < 0)
+                contrastFactor = 0;
+            else if (contrastFactor > 2)
+                contrastFactor = 2;
+
+            for (int i = 0; i < image.Width; i++)
+            {
+                for (int j = 0; j < image.Height; j++)
+                {
+                    Color pixelColor = image.GetPixel(i, j);
+                    int red = (int)(((pixelColor.R / 255f - 0.5f) * contrastFactor + 0.5f) * 255f);
+                    int green = (int)(((pixelColor.G / 255f - 0.5f) * contrastFactor + 0.5f) * 255f);
+                    int blue = (int)(((pixelColor.B / 255f - 0.5f) * contrastFactor + 0.5f) * 255f);
+                    image.SetPixel(i, j, Color.FromArgb(pixelColor.A, Clamp(red, 0, 255), Clamp(green, 0, 255), Clamp(blue, 0, 255)));
+                }
+            }
+        }
+
+        private int Clamp(int value, int min, int max)
+        {
+            return Math.Min(Math.Max(value, min), max);
         }
     }
 }

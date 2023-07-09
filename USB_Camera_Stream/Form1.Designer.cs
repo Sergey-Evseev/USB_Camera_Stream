@@ -1,4 +1,6 @@
-﻿namespace USB_Camera_Stream
+﻿using System;
+
+namespace USB_Camera_Stream
 {
     partial class Form1
     {
@@ -116,6 +118,8 @@
             this.PerformLayout();
 
         }
+
+        
 
         #endregion
 

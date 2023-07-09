@@ -37,27 +37,30 @@ namespace USB_Camera_Stream
             this.contrastSlider = new MetroFramework.Controls.MetroTrackBar();
             this.brightnessLabel = new MetroFramework.Controls.MetroLabel();
             this.contrastLabel = new MetroFramework.Controls.MetroLabel();
-            this.metroLabel1 = new MetroFramework.Controls.MetroLabel();
+            this.resolutionLabel = new MetroFramework.Controls.MetroLabel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(0, 50);
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBox1.Location = new System.Drawing.Point(0, 26);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(936, 537);
+            this.pictureBox1.Size = new System.Drawing.Size(813, 536);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
             // resolutionDropdown
             // 
-            this.resolutionDropdown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.resolutionDropdown.FormattingEnabled = true;
             this.resolutionDropdown.ItemHeight = 23;
-            this.resolutionDropdown.Location = new System.Drawing.Point(731, 642);
+            this.resolutionDropdown.Location = new System.Drawing.Point(663, 578);
             this.resolutionDropdown.Name = "resolutionDropdown";
-            this.resolutionDropdown.Size = new System.Drawing.Size(154, 29);
+            this.resolutionDropdown.Size = new System.Drawing.Size(123, 29);
             this.resolutionDropdown.TabIndex = 1;
             this.resolutionDropdown.UseSelectable = true;
             this.resolutionDropdown.SelectedIndexChanged += new System.EventHandler(this.resolutionDropdown_SelectedIndexChanged);
@@ -65,9 +68,9 @@ namespace USB_Camera_Stream
             // brightnessSlider
             // 
             this.brightnessSlider.BackColor = System.Drawing.Color.Transparent;
-            this.brightnessSlider.Location = new System.Drawing.Point(23, 636);
+            this.brightnessSlider.Location = new System.Drawing.Point(23, 574);
             this.brightnessSlider.Name = "brightnessSlider";
-            this.brightnessSlider.Size = new System.Drawing.Size(169, 42);
+            this.brightnessSlider.Size = new System.Drawing.Size(156, 39);
             this.brightnessSlider.TabIndex = 2;
             this.brightnessSlider.Text = "metroTrackBar1";
             this.brightnessSlider.ValueChanged += new System.EventHandler(this.brightnessSlider_ValueChanged);
@@ -75,9 +78,9 @@ namespace USB_Camera_Stream
             // contrastSlider
             // 
             this.contrastSlider.BackColor = System.Drawing.Color.Transparent;
-            this.contrastSlider.Location = new System.Drawing.Point(328, 643);
+            this.contrastSlider.Location = new System.Drawing.Point(311, 581);
             this.contrastSlider.Name = "contrastSlider";
-            this.contrastSlider.Size = new System.Drawing.Size(166, 32);
+            this.contrastSlider.Size = new System.Drawing.Size(145, 32);
             this.contrastSlider.TabIndex = 3;
             this.contrastSlider.Text = "metroTrackBar1";
             this.contrastSlider.ValueChanged += new System.EventHandler(this.contrastSlider_ValueChanged);
@@ -85,7 +88,7 @@ namespace USB_Camera_Stream
             // brightnessLabel
             // 
             this.brightnessLabel.AutoSize = true;
-            this.brightnessLabel.Location = new System.Drawing.Point(212, 646);
+            this.brightnessLabel.Location = new System.Drawing.Point(185, 581);
             this.brightnessLabel.Name = "brightnessLabel";
             this.brightnessLabel.Size = new System.Drawing.Size(71, 19);
             this.brightnessLabel.TabIndex = 4;
@@ -94,27 +97,27 @@ namespace USB_Camera_Stream
             // contrastLabel
             // 
             this.contrastLabel.AutoSize = true;
-            this.contrastLabel.Location = new System.Drawing.Point(532, 646);
+            this.contrastLabel.Location = new System.Drawing.Point(462, 584);
             this.contrastLabel.Name = "contrastLabel";
             this.contrastLabel.Size = new System.Drawing.Size(65, 19);
             this.contrastLabel.TabIndex = 5;
             this.contrastLabel.Text = "Contrast: ";
             // 
-            // metroLabel1
+            // resolutionLabel
             // 
-            this.metroLabel1.AutoSize = true;
-            this.metroLabel1.Location = new System.Drawing.Point(659, 646);
-            this.metroLabel1.Name = "metroLabel1";
-            this.metroLabel1.Size = new System.Drawing.Size(72, 19);
-            this.metroLabel1.TabIndex = 6;
-            this.metroLabel1.Text = "Resolution:";
+            this.resolutionLabel.AutoSize = true;
+            this.resolutionLabel.Location = new System.Drawing.Point(585, 584);
+            this.resolutionLabel.Name = "resolutionLabel";
+            this.resolutionLabel.Size = new System.Drawing.Size(72, 19);
+            this.resolutionLabel.TabIndex = 6;
+            this.resolutionLabel.Text = "Resolution:";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(934, 702);
-            this.Controls.Add(this.metroLabel1);
+            this.ClientSize = new System.Drawing.Size(811, 623);
+            this.Controls.Add(this.resolutionLabel);
             this.Controls.Add(this.contrastLabel);
             this.Controls.Add(this.brightnessLabel);
             this.Controls.Add(this.contrastSlider);
@@ -142,7 +145,7 @@ namespace USB_Camera_Stream
         private MetroFramework.Controls.MetroTrackBar contrastSlider;
         private MetroFramework.Controls.MetroLabel brightnessLabel;
         private MetroFramework.Controls.MetroLabel contrastLabel;
-        private MetroFramework.Controls.MetroLabel metroLabel1;
+        private MetroFramework.Controls.MetroLabel resolutionLabel;
     }
 }
 

@@ -56,6 +56,7 @@ namespace USB_Camera_Stream
             // 
             // resolutionDropdown
             // 
+            this.resolutionDropdown.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.resolutionDropdown.FormattingEnabled = true;
             this.resolutionDropdown.ItemHeight = 23;
             this.resolutionDropdown.Location = new System.Drawing.Point(663, 578);
@@ -67,8 +68,9 @@ namespace USB_Camera_Stream
             // 
             // brightnessSlider
             // 
+            this.brightnessSlider.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.brightnessSlider.BackColor = System.Drawing.Color.Transparent;
-            this.brightnessSlider.Location = new System.Drawing.Point(23, 574);
+            this.brightnessSlider.Location = new System.Drawing.Point(31, 574);
             this.brightnessSlider.Name = "brightnessSlider";
             this.brightnessSlider.Size = new System.Drawing.Size(156, 39);
             this.brightnessSlider.TabIndex = 2;
@@ -77,6 +79,7 @@ namespace USB_Camera_Stream
             // 
             // contrastSlider
             // 
+            this.contrastSlider.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.contrastSlider.BackColor = System.Drawing.Color.Transparent;
             this.contrastSlider.Location = new System.Drawing.Point(311, 581);
             this.contrastSlider.Name = "contrastSlider";
@@ -87,8 +90,9 @@ namespace USB_Camera_Stream
             // 
             // brightnessLabel
             // 
+            this.brightnessLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.brightnessLabel.AutoSize = true;
-            this.brightnessLabel.Location = new System.Drawing.Point(185, 581);
+            this.brightnessLabel.Location = new System.Drawing.Point(193, 581);
             this.brightnessLabel.Name = "brightnessLabel";
             this.brightnessLabel.Size = new System.Drawing.Size(71, 19);
             this.brightnessLabel.TabIndex = 4;
@@ -96,6 +100,7 @@ namespace USB_Camera_Stream
             // 
             // contrastLabel
             // 
+            this.contrastLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.contrastLabel.AutoSize = true;
             this.contrastLabel.Location = new System.Drawing.Point(462, 584);
             this.contrastLabel.Name = "contrastLabel";
@@ -105,6 +110,7 @@ namespace USB_Camera_Stream
             // 
             // resolutionLabel
             // 
+            this.resolutionLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.resolutionLabel.AutoSize = true;
             this.resolutionLabel.Location = new System.Drawing.Point(585, 584);
             this.resolutionLabel.Name = "resolutionLabel";

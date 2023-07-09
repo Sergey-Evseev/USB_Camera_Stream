@@ -53,6 +53,7 @@
             this.resolutionDropdown.Size = new System.Drawing.Size(154, 29);
             this.resolutionDropdown.TabIndex = 1;
             this.resolutionDropdown.UseSelectable = true;
+            this.resolutionDropdown.SelectedIndexChanged += new System.EventHandler(this.resolutionDropdown_SelectedIndexChanged);
             // 
             // Form1
             // 

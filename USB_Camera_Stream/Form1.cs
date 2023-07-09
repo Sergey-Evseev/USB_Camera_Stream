@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using AForge.Video;
 using AForge.Video.DirectShow;
+using AForge.Imaging.Filters;
 using MetroFramework;
 using MetroFramework.Forms;
-
 
 namespace USB_Camera_Stream
 {
@@ -19,50 +19,59 @@ namespace USB_Camera_Stream
     {
         private FilterInfoCollection videoDevices;
         private VideoCaptureDevice videoSource;
-
+        private bool lowLightAdjustmentEnabled = false;
+        private LevelsLinear lowLightFilter = new LevelsLinear();
 
         public Form1()
         {
             InitializeComponent();
             this.Style = MetroFramework.MetroColorStyle.Magenta;
             this.Theme = MetroFramework.MetroThemeStyle.Light;
-
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            //Enumerate available video devices
+            // Enumerate available video devices
             videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
             if (videoDevices.Count == 0)
             {
                 MessageBox.Show("No video devices found.");
                 return;
             }
-            //Populate the resolution dropdown list with the available resolutions of the first device
+            // Populate the resolution dropdown list with the available resolutions of the first device
             PopulateResolutionList(0);
 
-            //Select the first device
+            // Select the first device
             videoSource = new VideoCaptureDevice(videoDevices[0].MonikerString);
-            SetResolution(0, 0); //set the default resolution of the first device
+            SetResolution(0, 0); // Set the default resolution of the first device
             videoSource.NewFrame += new NewFrameEventHandler(video_NewFrame);
             videoSource.Start();
         }
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //Stop the video source
+            // Stop the video source
             if (videoSource != null && videoSource.IsRunning)
             {
                 videoSource.SignalToStop();
-                videoSource = null;  
+                videoSource = null;
             }
         }
 
-
-        //NewFrame event of the VideoCaptureDevice to capture new frames from the camera
-        //and display them in the PictureBox control.
+        // NewFrame event of the VideoCaptureDevice to capture new frames from the camera
+        // and display them in the PictureBox control.
         private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
-            pictureBox1.Image = (System.Drawing.Image)eventArgs.Frame.Clone();
+            if (lowLightAdjustmentEnabled)
+            {
+                // Apply low light adjustment to the frame
+                Bitmap adjustedFrame = lowLightFilter.Apply((Bitmap)eventArgs.Frame.Clone());
+                pictureBox1.Image = adjustedFrame;
+            }
+            else
+            {
+                pictureBox1.Image = (Bitmap)eventArgs.Frame.Clone();
+            }
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -82,9 +91,10 @@ namespace USB_Camera_Stream
                                                  (ClientSize.Height - pictureBox1.Height) / 2);
             }
         }
+
         private void PopulateResolutionList(int deviceIndex)
         {
-            //Get the available resolutions of the selected device
+            // Get the available resolutions of the selected device
             VideoCaptureDevice device = new VideoCaptureDevice(videoDevices[deviceIndex].MonikerString);
             List<string> resolutions = new List<string>();
             foreach (var capability in device.VideoCapabilities)
@@ -96,9 +106,10 @@ namespace USB_Camera_Stream
                 }
             }
 
-            //Populate the resolution dropdown list with the available resolutions
+            // Populate the resolution dropdown list with the available resolutions
             resolutionDropdown.DataSource = resolutions;
         }
+
         private void SetResolution(int deviceIndex, int resolutionIndex)
         {
             // Set the resolution of the selected device
@@ -109,15 +120,13 @@ namespace USB_Camera_Stream
 
             // Get the selected resolution
             var device = new VideoCaptureDevice(videoDevices[deviceIndex].MonikerString);
-            var resolution = device.VideoCapabilities
-                .ElementAtOrDefault(resolutionIndex);  
+            var resolution = device.VideoCapabilities.ElementAtOrDefault(resolutionIndex);
 
             if (resolution != null)
             {
                 device.VideoResolution = resolution;
                 videoSource.Start();
             }
-
         }
 
         private void resolutionDropdown_SelectedIndexChanged(object sender, EventArgs e)
@@ -125,6 +134,11 @@ namespace USB_Camera_Stream
             // Set the resolution of the selected device
             SetResolution(0, resolutionDropdown.SelectedIndex);
         }
-    }//end of public partial class Form1  
 
-} //end of namespace USB_Camera_Stream
+        private void lowLightAdjustmentToggle_CheckedChanged(object sender, EventArgs e)
+        {
+            // Toggle low light adjustment
+            lowLightAdjustmentEnabled = lowLightAdjustmentToggle.Checked;
+        }
+    }
+}

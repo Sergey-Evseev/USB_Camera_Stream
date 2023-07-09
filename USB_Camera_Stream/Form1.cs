@@ -19,7 +19,6 @@ namespace USB_Camera_Stream
     {
         private FilterInfoCollection videoDevices;
         private VideoCaptureDevice videoSource;
-        private bool lowLightAdjustmentEnabled = false;
         private LevelsLinear lowLightFilter = new LevelsLinear();
 
         public Form1()
@@ -62,16 +61,17 @@ namespace USB_Camera_Stream
         // and display them in the PictureBox control.
         private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
-            if (lowLightAdjustmentEnabled)
-            {
-                // Apply low light adjustment to the frame
-                Bitmap adjustedFrame = lowLightFilter.Apply((Bitmap)eventArgs.Frame.Clone());
-                pictureBox1.Image = adjustedFrame;
-            }
-            else
-            {
-                pictureBox1.Image = (Bitmap)eventArgs.Frame.Clone();
-            }
+            Bitmap frame = (Bitmap)eventArgs.Frame.Clone();
+
+            // Apply manual low light adjustment to the frame
+            int brightnessValue = brightnessSlider.Value; // Get the brightness value from a slider control
+            int contrastValue = contrastSlider.Value; // Get the contrast value from a slider control
+
+            lowLightFilter.ApplyInPlace(frame);
+            lowLightFilter.AdjustBrightness(brightnessValue);
+            lowLightFilter.AdjustContrast(contrastValue);
+
+            pictureBox1.Image = frame;
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -135,10 +135,16 @@ namespace USB_Camera_Stream
             SetResolution(0, resolutionDropdown.SelectedIndex);
         }
 
-        private void lowLightAdjustmentToggle_CheckedChanged(object sender, EventArgs e)
+        private void brightnessSlider_ValueChanged(object sender, EventArgs e)
         {
-            // Toggle low light adjustment
-            lowLightAdjustmentEnabled = lowLightAdjustmentToggle.Checked;
+            // Update the brightness value
+            brightnessLabel.Text = $"Brightness: {brightnessSlider.Value}";
+        }
+
+        private void contrastSlider_ValueChanged(object sender, EventArgs e)
+        {
+            // Update the contrast value
+            contrastLabel.Text = $"Contrast: {contrastSlider.Value}";
         }
     }
 }

@@ -22,14 +22,43 @@ namespace USB_Camera_Stream
         private VideoCaptureDevice videoSource;
         private Bitmap currentFrame; // Store the current frame in a separate variable
         private bool isProcessingFrame; // Track if a frame is currently being processed
-
+        //variables for dragging events
+        private bool isDraggingForm = false;
+        private Point startPoint;
+        
         public Form1()
         {
             InitializeComponent();
-            this.Style = MetroFramework.MetroColorStyle.Magenta;
-            this.Theme = MetroFramework.MetroThemeStyle.Light;
-        }
+            this.Style = MetroFramework.MetroColorStyle.Blue;
+            this.Theme = MetroFramework.MetroThemeStyle.Default;
 
+            //dragging events
+            // Wire up the mouse drag event handlers to the form
+            this.MouseDown += Form1_MouseDown;
+            this.MouseMove += Form1_MouseMove;
+            this.MouseUp += Form1_MouseUp;
+
+            // Add event handlers for MouseEnter and MouseLeave
+            pictureBox1.MouseEnter += PictureBox1_MouseEnter;
+            pictureBox1.MouseLeave += PictureBox1_MouseLeave;
+
+            //Attach event handler to the MouseDoubleClick event of the form
+            pictureBox1.MouseDoubleClick += PictureBox1_MouseDoubleClick;
+            
+            // Set KeyPreview property to true (ESC click event)
+            this.KeyPreview = true;
+            // Add ESC KeyDown event handler
+            this.KeyDown += Form1_KeyDown;
+
+            //Set the initial visibility of the controls to false
+            resolutionDropdown.Visible = false;
+            brightnessSlider.Visible = false;
+            contrastSlider.Visible = false;
+            brightnessLabel.Visible = false;
+            contrastLabel.Visible = false;
+            resolutionLabel.Visible = false;            
+        }
+        
         private void Form1_Load(object sender, EventArgs e)
         {
             // Enumerate available video devices
@@ -47,6 +76,12 @@ namespace USB_Camera_Stream
             SetResolution(0, 0); // Set the default resolution of the first device
             videoSource.NewFrame += new NewFrameEventHandler(video_NewFrame);
             videoSource.Start();
+
+            // Set default values for brightness and contrast sliders
+            brightnessSlider.Value = 100;
+            contrastSlider.Value = 0;
+            brightnessLabel.Text = $"Brightness: {brightnessSlider.Value}";
+            contrastLabel.Text = $"Contrast: {contrastSlider.Value}";
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -58,6 +93,106 @@ namespace USB_Camera_Stream
                 videoSource = null;
             }
         }
+        //Mouse drag handlers ///////////////        
+        
+        
+        private void Form1_MouseDown(object sender, MouseEventArgs e)
+        {
+            // Check if dragging the form is in progress
+            if (isDraggingForm)
+            {
+                // Calculate the new position of the form
+                int deltaX = e.X - startPoint.X;
+                int deltaY = e.Y - startPoint.Y;
+                int newX = this.Left + deltaX;
+                int newY = this.Top + deltaY;
+
+                // Update the form position
+                this.Location = new Point(newX, newY);
+            }
+        }
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            // Check if dragging is in progress
+            if (isDraggingForm)
+            {
+                // Calculate the new position of the form
+                int deltaX = e.X - startPoint.X;
+                int deltaY = e.Y - startPoint.Y;
+                int newX = this.Left + deltaX;
+                int newY = this.Top + deltaY;
+
+                // Update the form position
+                this.Location = new Point(newX, newY);
+            }
+        }
+
+        private void Form1_MouseUp(object sender, MouseEventArgs e)
+        {
+            // Check if the left mouse button is released
+            if (e.Button == MouseButtons.Left)
+            {
+                // Reset the dragging flag for the form
+                isDraggingForm = false;
+            }
+        }
+        //End of region Mouse drag handlers//////////////
+
+        //Mouse enter handlers
+        private void PictureBox1_MouseEnter(object sender, EventArgs e)
+        {
+            // Show the controls when mouse enters the form
+            resolutionDropdown.Visible = true;
+            brightnessSlider.Visible = true;
+            contrastSlider.Visible = true;
+            brightnessLabel.Visible = true;
+            contrastLabel.Visible = true;
+            resolutionLabel.Visible = true;
+        }
+
+        private void PictureBox1_MouseLeave(object sender, EventArgs e)
+        {
+            // Check if the mouse is not over any of the controls
+            if (!resolutionDropdown.Bounds.Contains(PointToClient(MousePosition))
+                && !brightnessSlider.Bounds.Contains(PointToClient(MousePosition))
+                && !contrastSlider.Bounds.Contains(PointToClient(MousePosition))
+                && !brightnessLabel.Bounds.Contains(PointToClient(MousePosition))
+                && !contrastLabel.Bounds.Contains(PointToClient(MousePosition)))
+            {
+                // Set the visibility of the controls to false when the mouse leaves the picture box
+                resolutionDropdown.Visible = false;
+                brightnessSlider.Visible = false;
+                contrastSlider.Visible = false;
+                brightnessLabel.Visible = false;
+                contrastLabel.Visible = false;
+                resolutionLabel.Visible = false;
+            }
+        }
+        private void PictureBox1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            //Toogle between normal and maximized state
+            if (WindowState == FormWindowState.Normal)
+            {
+                WindowState = FormWindowState.Maximized;
+            }
+            else
+            {
+                WindowState = FormWindowState.Normal;
+
+            }
+        }
+        // Event handler for KeyDown event
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Check if the Esc key is pressed
+            if (e.KeyCode == Keys.Escape)
+            {
+                // Set the form's WindowState to Normal
+                WindowState = FormWindowState.Normal;
+            }
+        }
+
 
         // NewFrame event of the VideoCaptureDevice to capture new frames from the camera
         // and display them in the PictureBox control.
@@ -108,12 +243,16 @@ namespace USB_Camera_Stream
             }
             else
             {
+                // Calculate the desired width for the PictureBox
+                int desiredWidth = (int)(ClientSize.Width * 1.2+65); // Adjust the factor as needed (e.g., 0.9 for 90% width)
+
                 // Reset the PictureBox size and location
-                pictureBox1.Size = new Size(960, 540); // or whatever size you choose
+                pictureBox1.Size = new Size(desiredWidth, (int)(desiredWidth * 9 / 16)); // Assuming 16:9 aspect ratio                
                 pictureBox1.Location = new Point((ClientSize.Width - pictureBox1.Width) / 2,
-                                                 (ClientSize.Height - pictureBox1.Height) / 2);
+                                                 (ClientSize.Height - pictureBox1.Height) / 2 + 4);
             }
         }
+
 
         private void PopulateResolutionList(int deviceIndex)
         {
@@ -142,8 +281,8 @@ namespace USB_Camera_Stream
             }
 
             // Get the selected resolution
-            var device = new VideoCaptureDevice(videoDevices[deviceIndex].MonikerString);
-            var resolution = device.VideoCapabilities.ElementAtOrDefault(resolutionIndex);
+            var device = new VideoCaptureDevice(videoDevices[deviceIndex].MonikerString); //get device
+            var resolution = device.VideoCapabilities.ElementAtOrDefault(resolutionIndex); //get device resolution
 
             if (resolution != null)
             {

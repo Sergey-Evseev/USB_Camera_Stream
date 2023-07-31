@@ -274,21 +274,29 @@ namespace USB_Camera_Stream
 
         private void SetResolution(int deviceIndex, int resolutionIndex)
         {
-            // Set the resolution of the selected device
-            if (videoSource != null && videoSource.IsRunning)
-            {
-                videoSource.SignalToStop();
-            }
-
-            // Get the selected resolution
+            //Get the selected resolution
             var device = new VideoCaptureDevice(videoDevices[deviceIndex].MonikerString); //get device
             var resolution = device.VideoCapabilities.ElementAtOrDefault(resolutionIndex); //get device resolution
 
-            if (resolution != null)
+            //Check if the selected resolution is different from the current resolution
+            if (videoSource != null && videoSource.VideoResolution != resolution)
             {
+                //Check if the video source is running befure stopping it
+                if (videoSource.IsRunning)
+                {
+                    videoSource.SignalToStop();
+                    videoSource.WaitForStop();
+                }
+
+                //Set the resolution of the selected device
                 device.VideoResolution = resolution;
+                //Reassign the videoSource to the new device
+                videoSource = device;
+
+                //Start the video source with the new resolution
+                videoSource.NewFrame +=new NewFrameEventHandler(video_NewFrame);
                 videoSource.Start();
-            }
+            }            
         }
 
         private void resolutionDropdown_SelectedIndexChanged(object sender, EventArgs e)

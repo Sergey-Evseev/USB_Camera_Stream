@@ -182,7 +182,7 @@ namespace USB_Camera_Stream
 
             }
         }
-        // Event handler for KeyDown event
+        // Event handler for ESС KeyDown event
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             // Check if the Esc key is pressed
